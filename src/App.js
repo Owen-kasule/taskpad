@@ -1,35 +1,54 @@
-import { useState } from "react";
-import TodoList from "./components/TodoList";
+import { useState, useEffect } from "react";
 import NewTodoForm from "./components/NewTodoForm";
-import "./App.css";
+import TodoList from "./components/TodoList";
+import "./styles.css";  // Changed from "./App.css"
+import { v4 as uuidv4 } from "uuid";
 
 function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState(() => {
+    const localValue = localStorage.getItem("ITEMS");
+    if (localValue == null) return [];
+    
+    return JSON.parse(localValue);
+  });
 
-  const addTodo = (newTodo) => {
-    setTodos(prevTodos => [...prevTodos, newTodo]);
-  };
+  useEffect(() => {
+    localStorage.setItem("ITEMS", JSON.stringify(todos));
+  }, [todos]);
 
-  const toggleTodo = id => {
-    const newTodos = [...todos];
-    const todo = newTodos.find(todo => todo.id === id);
-    if (todo) todo.complete = !todo.complete;
-    setTodos(newTodos);
-  };
+  function addTodo(title) {
+    setTodos(currentTodos => {
+      return [
+        ...currentTodos,
+        { id: uuidv4(), title, completed: false },
+      ];
+    });
+  }
 
-  const handleClearCompleted = () => {
-    const newTodos = todos.filter(todo => !todo.complete);
-    setTodos(newTodos);
-  };
+  function toggleTodo(id, completed) {
+    setTodos(currentTodos => {
+      return currentTodos.map(todo => {
+        if (todo.id === id) {
+          return { ...todo, completed };
+        }
+
+        return todo;
+      });
+    });
+  }
+
+  function deleteTodo(id) {
+    setTodos(currentTodos => {
+      return currentTodos.filter(todo => todo.id !== id);
+    });
+  }
 
   return (
-    <div className="App">
-      <h1>TaskPad</h1>
-      <NewTodoForm addTodo={addTodo} />
-      <TodoList todos={todos} toggleTodo={toggleTodo} />
-      <button onClick={handleClearCompleted}>Clear Completed</button>
-      <div>{todos.filter(todo => !todo.complete).length} left to do</div>
-    </div>
+    <>
+      <h1 className="header">Todo List</h1>
+      <NewTodoForm onSubmit={addTodo} />
+      <TodoList todos={todos} toggleTodo={toggleTodo} deleteTodo={deleteTodo} />
+    </>
   );
 }
 
