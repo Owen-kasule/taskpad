@@ -29,11 +29,22 @@ function App() {
     setTodos(newTodos);
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAddTodo();
+    }
+  };
+
   return (
     <div className="App">
       <h1>TaskPad</h1>
       <TodoList todos={todos} toggleTodo={toggleTodo} />
-      <input ref={todoNameRef} type="text" placeholder="New task..." />
+      <input 
+        ref={todoNameRef} 
+        type="text" 
+        placeholder="New task..." 
+        onKeyPress={handleKeyPress}
+      />
       <button onClick={handleAddTodo}>Add</button>
       <button onClick={handleClearCompleted}>Clear Completed</button>
       <div>{todos.filter(todo => !todo.complete).length} left to do</div>
